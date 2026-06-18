@@ -1,0 +1,10 @@
+services:
+  frontend:
+    build: ./frontend
+    container_name: frontend
+
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
