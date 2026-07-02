@@ -21,9 +21,11 @@ class TripController {
     }
   }
 
+  // Popravljen IDOR prema stavci 3 - ID se uzima iz tokena, a ne iz parametara URL-a
   async getByUser(req, res) {
     try {
-      const trips = await tripService.getUserTrips(req.params.userId);
+      const userId = req.userData.id || req.userData.userId;
+      const trips = await tripService.getUserTrips(userId);
       res.json(trips);
     } catch (err) {
       res.status(500).json({ error: err.message });
