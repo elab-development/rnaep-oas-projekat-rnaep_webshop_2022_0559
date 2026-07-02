@@ -14,8 +14,8 @@ const getItems = async (city, category) => {
     let localItems = await Item.find(filter);
 
     if (localItems.length === 0) {
-        console.log(`[Catalog Service] Nema podataka u bazi za ${city}. Pokrećem TripAdvisor agregaciju preko RapidAPI-ja...`);
         
+console.log(`[Catalog Service] Nema podataka u bazi za ${city}. Povlačim podatke sa Geoapify API-ja...`);        
         const externalItems = await externalDataClient.fetchExternalItems(city);
         
         if (externalItems.length > 0) {
