@@ -6,7 +6,6 @@ const { startConsumer } = require('./kafka/consumer');
 const PORT = process.env.PORT || 4004;
 
 app.listen(PORT, () => {
-    console.log(`🚀 Analytics Service pokrenut na portu ${PORT}`);
-    // Pokrećemo Kafku odmah po podizanju servera
+    console.log(`Analytics Service pokrenut na portu ${PORT}`);
     startConsumer();
 });
