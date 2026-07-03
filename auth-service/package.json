@@ -1,10 +1,25 @@
 {
+  "name": "auth-service",
+  "version": "1.0.0",
+  "description": "Auth Service sa monitoringom i testovima",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "test": "jest --runInBand"
+  },
   "dependencies": {
     "bcrypt": "^6.0.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
-    "mysql2": "^3.22.5"
+    "mysql2": "^3.22.5",
+    "prom-client": "^15.1.2"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "nodemon": "^3.1.0",
+    "supertest": "^7.0.0"
   }
 }
