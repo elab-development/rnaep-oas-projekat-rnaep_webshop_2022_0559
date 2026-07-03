@@ -44,17 +44,39 @@ const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/db');
 const itemRoutes = require('./routes/itemRoutes');
+const client = require('prom-client');
 
 const app = express();
-const PORT = 4002;
+const PORT = process.env.PORT || 3002;
+
+const collectDefaultMetrics = client.collectDefaultMetrics;
+collectDefaultMetrics({ register: client.register });
 
 app.use(cors());
 app.use(express.json()); 
 
 
-app.use('/api/items', itemRoutes);
+app.get('/health', (req, res) => {
+    res.status(200).json({
+        status: 'UP',
+        timestamp: new Date(),
+        uptime: process.uptime()
+    });
+});
+
+app.get('/metrics', async (req, res) => {
+    res.set('Content-Type', client.register.contentType);
+    res.end(await client.register.metrics());
+});
+
+
+app.use('/api/catalog', itemRoutes);
 
 app.listen(PORT, async () => {
     console.log(`[Server] Catalog Service uspešno pokrenut na portu ${PORT}`);
     await connectDB(); 
 });
+
+
+
+module.exports = app;

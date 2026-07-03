@@ -3,23 +3,21 @@ const cors = require("cors");
 const { createProxyMiddleware } = require("http-proxy-middleware");
 require("dotenv").config();
 
+
 const app = express();
 const PORT = Number(process.env.PORT) || 8080;
 
-// Dozvoljava React aplikaciji da šalje zahteve Gateway-u.
 app.use(
     cors({
-        origin: process.env.FRONTEND_URL || "http://localhost:5173",
+        origin: process.env.FRONTEND_URL || "http://localhost:3000" || "http://192.168.1.4:3000",
         credentials: true,
     })
 );
 
-// Provera da li je Gateway pokrenut.
 app.get("/", (req, res) => {
     res.send("API Gateway is running");
 });
 
-// Health-check ruta.
 app.get("/health", (req, res) => {
     res.status(200).json({
         status: "OK",
@@ -28,16 +26,17 @@ app.get("/health", (req, res) => {
     });
 });
 
-// Auth Service
 app.use(
+    
     "/api/auth",
     createProxyMiddleware({
         target: process.env.AUTH_SERVICE_URL,
         changeOrigin: true,
+        pathRewrite: {
+'^/api/auth': '',         },
     })
 );
 
-// Catalog Service
 app.use(
     "/api/catalog",
     createProxyMiddleware({
@@ -46,7 +45,6 @@ app.use(
     })
 );
 
-// Trip Service
 app.use(
     "/api/trips",
     createProxyMiddleware({
@@ -55,7 +53,6 @@ app.use(
     })
 );
 
-// Analytics Service
 app.use(
     "/api/analytics",
     createProxyMiddleware({
@@ -64,7 +61,6 @@ app.use(
     })
 );
 
-// Ruta ne postoji na Gateway-u.
 app.use((req, res) => {
     res.status(404).json({
         message: "Gateway route not found",
