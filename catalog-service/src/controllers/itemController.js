@@ -59,11 +59,23 @@ const deleteItem = async (req, res) => {
 const geocodeCity = async (req, res) => {
     try {
         const { city } = req.query;
+        if (!city) {
+            return res.status(400).json({ message: 'Grad je obavezan parametar.' });
+        }
+
         const coordinates = await geocodeService.getCityCoordinates(city);
-        if (!coordinates) return res.status(404).json({ message: 'City not found' });
-        res.json(coordinates);
+
+        if (!coordinates) {
+            return res.status(404).json({ message: 'Grad nije pronađen.' });
+        }
+
+        return res.json(coordinates);
+
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        return res.status(500).json({ 
+            message: 'Greška na servisu za geokodiranje.', 
+            error: error.message 
+        });
     }
 };
 

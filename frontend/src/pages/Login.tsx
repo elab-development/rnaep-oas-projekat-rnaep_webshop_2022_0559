@@ -20,10 +20,13 @@ const Login = () => {
     }
 
     try {
-      const response = await axios.post('http://localhost:8000/api/login', {
+      const baseUrl = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080';
+      
+      const response = await axios.post(`${baseUrl}/api/auth/login`, {
         email: email,
         password: password
       });
+      
 
       if (response.data.access_token) {
         const userData = response.data.user; 
