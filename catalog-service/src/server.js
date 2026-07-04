@@ -39,44 +39,19 @@
 //     await connectDB();
 // });
 
-require('dotenv').config(); 
-const express = require('express');
-const cors = require('cors');
-const connectDB = require('./config/db');
-const itemRoutes = require('./routes/itemRoutes');
-const client = require('prom-client');
+require('dotenv').config();
 
-const app = express();
+const app = require('./app');
+const connectDB = require('./config/db');
+
 const PORT = process.env.PORT || 3002;
 
-const collectDefaultMetrics = client.collectDefaultMetrics;
-collectDefaultMetrics({ register: client.register });
+const startServer = async () => {
+    await connectDB();
 
-app.use(cors());
-app.use(express.json()); 
-
-
-app.get('/health', (req, res) => {
-    res.status(200).json({
-        status: 'UP',
-        timestamp: new Date(),
-        uptime: process.uptime()
+    app.listen(PORT, () => {
+        console.log(`[Server] Catalog Service uspešno pokrenut na portu ${PORT}`);
     });
-});
+};
 
-app.get('/metrics', async (req, res) => {
-    res.set('Content-Type', client.register.contentType);
-    res.end(await client.register.metrics());
-});
-
-
-app.use('/api/catalog', itemRoutes);
-
-app.listen(PORT, async () => {
-    console.log(`[Server] Catalog Service uspešno pokrenut na portu ${PORT}`);
-    await connectDB(); 
-});
-
-
-
-module.exports = app;
+startServer();

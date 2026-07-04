@@ -14,35 +14,45 @@ async function fetchCoordinatesFromAPI(city) {
 
     const result = data[0];
 
+    const coordinates = result.geometry?.coordinates;
+    const properties = result.properties || {};
+
+    if (!coordinates || coordinates.length < 2) {
+        return null;
+    }
+
+    const [lng, lat] = coordinates;
+
     return {
-        city: city,
-        lat: parseFloat(result.lat),
-        lng: parseFloat(result.lon),
-        displayName: result.display_name
+        city,
+        lat,
+        lng,
+        displayName: properties.formatted || city
     };
 }
 
 const breakerOptions = {
-    timeout: 3000,               
-    errorThresholdPercentage: 50, 
-    resetTimeout: 10000           
+    timeout: 3000,
+    errorThresholdPercentage: 50,
+    resetTimeout: 10000
 };
 
 const breaker = new CircuitBreaker(fetchCoordinatesFromAPI, breakerOptions);
 
 breaker.fallback((city) => {
-    console.warn(`[Circuit Breaker] Eksterni API je nedostupan! Aktivan fallback za grad: ${city}`);
+    console.warn(`Eksterni API je nedostupan. Vraćam fallback za grad: ${city}`);
+
     return {
-        city: city,
-        lat: 44.7866, 
+        city,
+        lat: 44.7866,
         lng: 20.4489,
-        displayName: `${city} (Fallback lokacija - Eksterni servis u kvaru)`
+        displayName: `${city} (fallback lokacija)`
     };
 });
 
-breaker.on('open', () => console.log('Stanje: OPEN! Blokiram direktne pozive ka API-ju.'));
-breaker.on('halfOpen', () => console.log('Stanje: HALF_OPEN. Testiram da li je API proradio...'));
-breaker.on('close', () => console.log('Stanje: CLOSED. Sve radi normalno.'));
+breaker.on('open', () => console.log('OPEN - blokiram pozive ka eksternom API-ju.'));
+breaker.on('halfOpen', () => console.log('HALF_OPEN - proveravam da li je API dostupan.'));
+breaker.on('close', () => console.log('CLOSED - eksterni API radi normalno.'));
 
 const getCityCoordinates = async (city) => {
     return await breaker.fire(city);

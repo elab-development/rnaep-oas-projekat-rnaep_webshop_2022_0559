@@ -87,101 +87,91 @@
 //     geocodeCity
 // };
 
-
-
 const axios = require('axios');
+
+const GEOAPIFY_BASE_URL = 'https://api.geoapify.com';
+
 const fetchExternalItems = async (city) => {
     try {
-        const geo = await axios.get(
-            "https://api.geoapify.com/v1/geocode/search",
-            {
-                params: {
-                    text: city,
-                    limit: 1,
-                    apiKey: process.env.GEOAPIFY_API_KEY
-                }
-            }
-        );
-
-        if (!geo.data.features.length) {
+        if (!process.env.GEOAPIFY_API_KEY) {
+            console.warn('[Geoapify] GEOAPIFY_API_KEY nije podešen.');
             return [];
         }
 
-        const [lng, lat] = geo.data.features[0].geometry.coordinates;
-
-        const places = await axios.get(
-            "https://api.geoapify.com/v2/places",
-            {
-                params: {
-                    categories: "catering.restaurant,accommodation,tourism",
-                    filter: `circle:${lng},${lat},30000`,
-                    bias: `proximity:${lng},${lat}`,
-                    limit: 100,
-                    apiKey: process.env.GEOAPIFY_API_KEY
-                }
-            }
-        );
-
-        return places.data.features.map(place => {
-
-            let category = "other";
-
-            const categories = place.properties.categories || [];
-
-            if (categories.some(c => c.startsWith("catering.restaurant"))) {
-                category = "restaurant";
-            } else if (categories.some(c => c.startsWith("accommodation.hotel"))) {
-                category = "hotel";
-            } else if (categories.some(c => c.startsWith("tourism"))) {
-                category = "attraction";
-            }
-
-            return {
-                name: place.properties.name || "Unknown",
-                category,
-                city,
-
-                address:
-                    place.properties.formatted ||
-                    "",
-
-                description:
-                    place.properties.datasource?.raw?.tourism ||
-                    "Imported from Geoapify",
-
-                rating: 4.5,
-
-                location: {
-                    lat: place.properties.lat,
-                    lng: place.properties.lon
-                },
-
-                tags: categories,
-
-                images: []
-            };
-        });
-
-    } catch (err) {
-        console.error(err.response?.data || err.message);
-        return [];
-    }
-};
-
-const geocodeCity = async (city) => {
-    const response = await axios.get(
-        "https://api.geoapify.com/v1/geocode/search",
-        {
+        const geo = await axios.get(`${GEOAPIFY_BASE_URL}/v1/geocode/search`, {
             params: {
                 text: city,
                 limit: 1,
                 apiKey: process.env.GEOAPIFY_API_KEY
             }
+        });
+
+        if (!geo.data.features || geo.data.features.length === 0) {
+            return [];
         }
-    );
+
+        const [lng, lat] = geo.data.features[0].geometry.coordinates;
+
+        const places = await axios.get(`${GEOAPIFY_BASE_URL}/v2/places`, {
+            params: {
+                categories: 'catering.restaurant,accommodation.hotel,tourism.attraction',
+                filter: `circle:${lng},${lat},30000`,
+                bias: `proximity:${lng},${lat}`,
+                limit: 100,
+                apiKey: process.env.GEOAPIFY_API_KEY
+            }
+        });
+
+        return places.data.features.map((place) => {
+            const categories = place.properties.categories || [];
+
+            let category = 'attraction';
+
+            if (categories.some(c => c.startsWith('catering.restaurant'))) {
+                category = 'restaurant';
+            } else if (categories.some(c => c.startsWith('accommodation.hotel'))) {
+                category = 'hotel';
+            } else if (categories.some(c => c.startsWith('tourism'))) {
+                category = 'attraction';
+            }
+
+            return {
+                name: place.properties.name || 'Unknown',
+                category,
+                city,
+                address: place.properties.formatted || 'Address not available',
+                description: 'Imported from Geoapify',
+                rating: 4.5,
+                location: {
+                    lat: place.properties.lat || lat,
+                    lng: place.properties.lon || lng
+                },
+                tags: categories,
+                images: []
+            };
+        });
+    } catch (err) {
+        console.error('[Geoapify Error]', err.response?.data || err.message);
+        return [];
+    }
+};
+
+const geocodeCity = async (city) => {
+    if (!process.env.GEOAPIFY_API_KEY) {
+        throw new Error('GEOAPIFY_API_KEY nije podešen.');
+    }
+
+    const response = await axios.get(`${GEOAPIFY_BASE_URL}/v1/geocode/search`, {
+        params: {
+            text: city,
+            limit: 1,
+            apiKey: process.env.GEOAPIFY_API_KEY
+        }
+    });
 
     return response.data.features;
 };
+
 module.exports = {
     geocodeCity,
     fetchExternalItems
