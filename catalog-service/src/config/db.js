@@ -2,17 +2,17 @@ const mongoose = require('mongoose');
 
 const connectDB = async () => {
     try {
+        if (!process.env.MONGO_URI) {
+            throw new Error('MONGO_URI nije definisan u environment varijablama.');
+        }
+
         const conn = await mongoose.connect(process.env.MONGO_URI);
-        const mojAtlasUrl = 'mongodb+srv://teks:teks11@cluster0.h1nnwvc.mongodb.net/?appName=Cluster0';
-        await mongoose.connect(mojAtlasUrl);
-        console.log(`\x1b[32m%s\x1b[0m`, `[Database] MongoDB connected: ${conn.connection.host}`);
+
+        console.log(`[Database] MongoDB connected: ${conn.connection.host}`);
     } catch (error) {
-        console.error(`\x1b[31m%s\x1b[0m`, `[Database Error] Konekcija neuspešna: ${error.message}`);
-        process.exit(1); 
+        console.error(`[Database Error] Konekcija neuspešna: ${error.message}`);
+        process.exit(1);
     }
 };
 
 module.exports = connectDB;
-
-
-
