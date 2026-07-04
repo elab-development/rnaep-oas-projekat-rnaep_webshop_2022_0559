@@ -8,9 +8,9 @@ module.exports = async (req, res, next) => {
     const [rows] = await pool.execute('SELECT user_id FROM trips WHERE id = ?', [tripId]);
     if (rows.length === 0) return res.status(404).json({ message: 'Trip not found.' });
 
-    if (rows[0].user_id !== userId) {
-      return res.status(403).json({ message: 'Access denied. IDOR Protection active.' });
-    }
+    if (Number(rows[0].user_id) !== Number(userId)) {
+    return res.status(403).json({ message: "Nemate pristup ovom putovanju." });
+}
     next();
   } catch (error) {
     return res.status(500).json({ message: 'Internal server error in ownership validation.' });

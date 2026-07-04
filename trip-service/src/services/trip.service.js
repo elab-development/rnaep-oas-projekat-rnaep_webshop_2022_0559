@@ -78,10 +78,26 @@ class TripService {
     return trip;
   }
 
+  // Sređena metoda sa osiguranim Fallback mehanizmom u slučaju da Circuit Breaker pukne 
   async getTripWeather(id) {
-    const trip = await tripRepository.getTripById(id);
-    if (!trip) return null;
-    return await getWeather(trip.destination);
+    try {
+      const trip = await tripRepository.getTripById(id);
+      if (!trip) return null;
+      
+      // Poziva klijenta koji u sebi ima implementiran opossum Circuit Breaker
+      return await getWeather(trip.destination);
+    } catch (err) {
+      console.error(`[Circuit Breaker Fallback] Weather API nedostupan za trip ${id}:`, err.message);
+      
+      // Vraća se strukturirani fallback objekat umesto greške
+      return {
+        source: 'fallback-cache',
+        destination: 'Unknown',
+        message: 'Vremenska prognoza trenutno nije dostupna (Circuit Breaker aktivan).',
+        temperature: 'N/A',
+        summary: 'No data'
+      };
+    }
   }
 }
 

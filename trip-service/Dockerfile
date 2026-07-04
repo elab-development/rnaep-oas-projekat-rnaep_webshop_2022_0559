@@ -1,13 +1,14 @@
-FROM node:18-alpine
+FROM node:22-alpine
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY package.json package-lock.json ./
 
-RUN npm install
+RUN npm ci --omit=dev
 
-COPY . .
+COPY src ./src
+COPY database ./database
 
-EXPOSE 4003
+EXPOSE 3003
 
-CMD ["node", "src/server.js"]
+CMD ["npm", "start"]
