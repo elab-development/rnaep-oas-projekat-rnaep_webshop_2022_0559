@@ -14,7 +14,7 @@ jest.mock('../src/clients/weather.client', () => ({
   })
 }));
 
-describe('Trip Service - Kompletan test paket (Stavke 6, 3, 7)', () => {
+describe('Trip Service - Kompletan test paket', () => {
 
   // --- BAZIČNI TESTOVI ---
   it('should return UP for health check', async () => {
