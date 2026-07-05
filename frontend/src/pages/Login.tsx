@@ -20,8 +20,8 @@ const Login = () => {
     }
 
     try {
-      const baseUrl = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080';
-      
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+
       const response = await axios.post(`${baseUrl}/api/auth/login`, {
         email: email,
         password: password

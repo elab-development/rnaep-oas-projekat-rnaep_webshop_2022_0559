@@ -1,20 +1,28 @@
-import axios from 'axios';
-
-const BASE_URL = 'http://localhost:8000/api';
-
+import { api } from './api';
 
 export const searchAktivnostiInDb = async (query: string) => {
-    const res = await axios.get(`${BASE_URL}/aktivnosti/search`, { params: { query } });
+    const res = await api.get('/api/catalog', {
+        params: {
+            city: query,
+            category: 'attraction'
+        }
+    });
+
     return res.data;
 };
 
-
 export const importAktivnostiFromApi = async (query: string) => {
-    return await axios.post(`${BASE_URL}/import-aktivnosti`, { query });
+    const res = await api.get('/api/catalog', {
+        params: {
+            city: query,
+            category: 'attraction'
+        }
+    });
+
+    return res.data;
 };
 
-
 export const getAktivnostDetails = async (id: string | number) => {
-    const res = await axios.get(`${BASE_URL}/aktivnosti/${id}`);
+    const res = await api.get(`/api/catalog/${id}`);
     return res.data;
 };

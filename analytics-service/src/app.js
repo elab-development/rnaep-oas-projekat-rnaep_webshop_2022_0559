@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
-const client = require('prom-client'); 
-const analyticsRoutes = require('./src/routes/analytics.routes');
+const client = require('prom-client');
+const analyticsRoutes = require('./routes/analytics.routes');
 
 const app = express();
 
