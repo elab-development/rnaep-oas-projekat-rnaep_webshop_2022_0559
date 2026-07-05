@@ -229,9 +229,39 @@ services:
 
         echo "Svi Kafka topic-i su uspesno kreirani."
     restart: "no"
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    depends_on:
+      - api-gateway
+      - analytics-service
+    restart: unless-stopped
 
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./monitoring/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - prometheus
+    restart: unless-stopped
 volumes:
   mysql-auth-data:
   trip-db-data:
   mongo-catalog-data:
   mongo-analytics-data:
+  prometheus-data:
+  grafana-data:
