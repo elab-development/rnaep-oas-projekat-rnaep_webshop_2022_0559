@@ -21,6 +21,11 @@ class AuthController {
             }
 
             const newUser = await identityService.registerUser({ username, email, password });
+            
+            if (newUser && newUser.password_hash) {
+                delete newUser.password_hash;
+            }
+
             return res.status(201).json({ message: 'User registered successfully', user: newUser });
         } catch (error) {
             return res.status(400).json({ message: error.message });
@@ -36,6 +41,11 @@ class AuthController {
             }
 
             const result = await identityService.loginUser({ email, password });
+            
+            if (result && result.user && result.user.password_hash) {
+                delete result.user.password_hash;
+            }
+
             return res.status(200).json(result);
         } catch (error) {
             return res.status(401).json({ message: error.message });
@@ -62,7 +72,16 @@ class AuthController {
     async getAllUsers(req, res) {
         try {
             const users = await userRepository.getAll();
-            return res.status(200).json(users);
+            
+            const safeUsers = users.map(user => {
+                const userObj = { ...user };
+                if (userObj.password_hash) {
+                    delete userObj.password_hash;
+                }
+                return userObj;
+            });
+
+            return res.status(200).json(safeUsers);
         } catch (error) {
             return res.status(500).json({ message: error.message });
         }
@@ -78,6 +97,11 @@ class AuthController {
             }
 
             const updatedUser = await accessControlService.changeUserRole(id, role);
+            
+            if (updatedUser && updatedUser.password_hash) {
+                delete updatedUser.password_hash;
+            }
+
             return res.status(200).json({ message: 'User role updated successfully', user: updatedUser });
         } catch (error) {
             return res.status(400).json({ message: error.message });
