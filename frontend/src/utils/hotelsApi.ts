@@ -1,16 +1,28 @@
-import axios from 'axios';
-
-const BASE_URL = 'http://localhost:8000/api';
+import { api } from './api';
 
 export const searchPlacesInDb = async (query: string) => {
-    const res = await axios.get(`${BASE_URL}/search`, { params: { query } });
+    const res = await api.get('/api/catalog', {
+        params: {
+            city: query,
+            category: 'hotel'
+        }
+    });
+
     return res.data;
 };
 
 export const importFromApi = async (query: string) => {
-    return await axios.post(`${BASE_URL}/import/destinations`, { query });
+    const res = await api.get('/api/catalog', {
+        params: {
+            city: query,
+            category: 'hotel'
+        }
+    });
+
+    return res.data;
 };
 
 export const getHotelDetails = async (id: number) => {
-    return await axios.get(`${BASE_URL}/places/${id}`);
+    const res = await api.get(`/api/catalog/${id}`);
+    return res.data;
 };
