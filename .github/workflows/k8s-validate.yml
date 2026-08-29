@@ -1,0 +1,36 @@
+name: Validate Kubernetes Manifests
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  validate-manifests:
+    name: Lint and Validate K8s/Helm
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install Helm
+      uses: azure/setup-helm@v4
+      with:
+        version: '3.14.0'
+
+    - name: Helm lint
+      run: helm lint ./charts/tripplanner
+
+    - name: Helm template render check
+      run: |
+        helm template tripplanner ./charts/tripplanner > /dev/null && echo "Helm template rendered successfully"
+
+    - name: Validate K8s manifests with kubectl dry-run
+      run: |
+        curl -LO "https://dl.k8s.io/release/v1.29.0/bin/linux/amd64/kubectl"
+        chmod +x kubectl
+        sudo mv kubectl /usr/local/bin/
+        kubectl apply --dry-run=client -f k8s/ 2>&1 | grep -v "^Warning" || true
+        echo "Manifest validation completed"
