@@ -1,0 +1,155 @@
+namespace: tripplanner
+
+imagePullPolicy: IfNotPresent
+
+auth:
+  image: tea17/auth-service
+  tag: "1.0"
+  replicas: 2
+  port: 3001
+
+apiGateway:
+  image: tea17/api-gateway
+  tag: "1.0"
+  replicas: 1
+  port: 8080
+
+frontend:
+  image: tea17/frontend
+  tag: "1.0"
+  replicas: 1
+  port: 80
+
+mysql:
+  image: mysql
+  tag: "8.0"
+  port: 3306
+
+mongoCatalog:
+  image: mongo
+  tag: "5.0"
+  port: 27017
+  database: trip_catalog
+  rootUser: admin
+  rootPassword: "catalog_password"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+
+catalog:
+  image: tea17/catalog-service
+  tag: "1.0"
+  replicas: 1
+  port: 3002
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+
+tripDb:
+  image: mysql
+  tag: "8.0"
+  port: 3306
+  database: trip_db
+  user: trip_user
+  rootPassword: "root_password_demo"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+trip:
+  image: tea17/trip-service
+  tag: "1.0"
+  replicas: 1
+  port: 3003
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+
+analytics:
+  image: tea17/analytics-service
+  tag: "1.0"
+  replicas: 1
+  port: 3004
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+      
+
+mongoAnalytics:
+  image: mongo
+  tag: "7"
+  port: 27017
+  database: trip_analytics
+  rootUser: admin
+  rootPassword: "analytics_password"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 300m
+      memory: 256Mi
+
+kafka:
+  image: bitnami/kafka
+  tag: "3.7"
+  port: 9092
+  internalPort: 9094
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+
+prometheus:
+  image: prom/prometheus
+  tag: "v2.51.0"
+  port: 9090
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+
+grafana:
+  image: grafana/grafana
+  tag: "10.4.0"
+  port: 3000
+  adminUser: admin
+  adminPassword: "grafana_admin"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 300m
+      memory: 256Mi
+
+
+secrets:
+  authDbPassword: "auth_password"
+  authJwtSecret: "change_me_auth_secret_super_long_random_string"

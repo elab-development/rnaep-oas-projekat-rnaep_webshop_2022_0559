@@ -1,0 +1,48 @@
+﻿apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: catalog-service
+  namespace: tripplanner
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: catalog-service
+  template:
+    metadata:
+      labels:
+        app: catalog-service
+    spec:
+      containers:
+      - name: catalog-service
+        image: tea17/catalog-service:1.0
+        ports:
+        - containerPort: 3002
+        envFrom:
+        - configMapRef:
+            name: app-config
+        env:
+        - name: GEOAPIFY_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: GEOAPIFY_API_KEY
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3002
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3002
+          initialDelaySeconds: 10
+          periodSeconds: 5

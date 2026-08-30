@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo-catalog
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongo-catalog
+  template:
+    metadata:
+      labels:
+        app: mongo-catalog
+    spec:
+      containers:
+      - name: mongo-catalog
+        image: "{{ .Values.mongoCatalog.image }}:{{ .Values.mongoCatalog.tag }}"
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        ports:
+        - containerPort: {{ .Values.mongoCatalog.port }}
+        env:
+        - name: MONGO_INITDB_DATABASE
+          value: {{ .Values.mongoCatalog.database }}
+        - name: MONGO_INITDB_ROOT_USERNAME
+          value: {{ .Values.mongoCatalog.rootUser }}
+        - name: MONGO_INITDB_ROOT_PASSWORD
+          value: {{ .Values.mongoCatalog.rootPassword }}
+        resources:
+          requests:
+            cpu: {{ .Values.mongoCatalog.resources.requests.cpu }}
+            memory: {{ .Values.mongoCatalog.resources.requests.memory }}
+          limits:
+            cpu: {{ .Values.mongoCatalog.resources.limits.cpu }}
+            memory: {{ .Values.mongoCatalog.resources.limits.memory }}
+        volumeMounts:
+        - name: mongo-catalog-data
+          mountPath: /data/db
+      volumes:
+      - name: mongo-catalog-data
+        emptyDir: {}

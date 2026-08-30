@@ -1,0 +1,6 @@
+apiVersion: v2
+name: tripplanner
+description: TripPlanner mikroservisna aplikacija na Kubernetes-u
+type: application
+version: 1.0.0
+appVersion: "1.0"

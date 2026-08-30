@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: catalog-service
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: {{ .Values.catalog.replicas }}
+  selector:
+    matchLabels:
+      app: catalog-service
+  template:
+    metadata:
+      labels:
+        app: catalog-service
+    spec:
+      containers:
+      - name: catalog-service
+        image: "{{ .Values.catalog.image }}:{{ .Values.catalog.tag }}"
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        ports:
+        - containerPort: {{ .Values.catalog.port }}
+        envFrom:
+        - configMapRef:
+            name: app-config
+        env:
+        - name: GEOAPIFY_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: GEOAPIFY_API_KEY
+        resources:
+          requests:
+            cpu: {{ .Values.catalog.resources.requests.cpu }}
+            memory: {{ .Values.catalog.resources.requests.memory }}
+          limits:
+            cpu: {{ .Values.catalog.resources.limits.cpu }}
+            memory: {{ .Values.catalog.resources.limits.memory }}
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: {{ .Values.catalog.port }}
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: {{ .Values.catalog.port }}
+          initialDelaySeconds: 10
+          periodSeconds: 5

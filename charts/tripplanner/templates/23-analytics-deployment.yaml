@@ -1,0 +1,43 @@
+﻿apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: analytics-service
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: {{ .Values.analytics.replicas }}
+  selector:
+    matchLabels:
+      app: analytics-service
+  template:
+    metadata:
+      labels:
+        app: analytics-service
+    spec:
+      containers:
+      - name: analytics-service
+        image: "{{ .Values.analytics.image }}:{{ .Values.analytics.tag }}"
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        ports:
+        - containerPort: {{ .Values.analytics.port }}
+        envFrom:
+        - configMapRef:
+            name: app-config
+        resources:
+          requests:
+            cpu: {{ .Values.analytics.resources.requests.cpu }}
+            memory: {{ .Values.analytics.resources.requests.memory }}
+          limits:
+            cpu: {{ .Values.analytics.resources.limits.cpu }}
+            memory: {{ .Values.analytics.resources.limits.memory }}
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: {{ .Values.analytics.port }}
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: {{ .Values.analytics.port }}
+          initialDelaySeconds: 10
+          periodSeconds: 5

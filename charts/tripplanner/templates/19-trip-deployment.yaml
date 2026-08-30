@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trip-service
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: {{ .Values.trip.replicas }}
+  selector:
+    matchLabels:
+      app: trip-service
+  template:
+    metadata:
+      labels:
+        app: trip-service
+    spec:
+      containers:
+      - name: trip-service
+        image: "{{ .Values.trip.image }}:{{ .Values.trip.tag }}"
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        ports:
+        - containerPort: {{ .Values.trip.port }}
+        envFrom:
+        - configMapRef:
+            name: app-config
+        env:
+        - name: TRIP_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: TRIP_DB_PASSWORD
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: TRIP_JWT_SECRET
+        - name: WEATHER_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: WEATHER_API_KEY
+        resources:
+          requests:
+            cpu: {{ .Values.trip.resources.requests.cpu }}
+            memory: {{ .Values.trip.resources.requests.memory }}
+          limits:
+            cpu: {{ .Values.trip.resources.limits.cpu }}
+            memory: {{ .Values.trip.resources.limits.memory }}
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: {{ .Values.trip.port }}
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: {{ .Values.trip.port }}
+          initialDelaySeconds: 10
+          periodSeconds: 5

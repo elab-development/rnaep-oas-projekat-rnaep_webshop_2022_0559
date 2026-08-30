@@ -1,0 +1,19 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: kafka-init-topics
+  namespace: {{ .Values.namespace }}
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: kafka-init
+        image: "{{ .Values.kafka.image }}:{{ .Values.kafka.tag }}"
+        command:
+        - /bin/sh
+        - -c
+        - |
+          kafka-topics.sh --bootstrap-server localhost:9092 --create --if-not-exists --topic analytics-events --partitions 1 --replication-factor 1;
+          kafka-topics.sh --bootstrap-server localhost:9092 --create --if-not-exists --topic trip-events --partitions 1 --replication-factor 1;
+          echo "Kafka topics created"

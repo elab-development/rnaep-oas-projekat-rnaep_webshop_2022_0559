@@ -1,0 +1,27 @@
+﻿apiVersion: batch/v1
+kind: Job
+metadata:
+  name: kafka-init
+  namespace: tripplanner
+spec:
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+        app: kafka-init
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: kafka-init
+        image: apache/kafka:4.3.0
+        command:
+        - /bin/sh
+        - -c
+        - |
+          set -e
+          echo "Kreiranje Kafka topic-a..."
+          /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:19092 --create --if-not-exists --topic trip-created --partitions 1 --replication-factor 1
+          /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:19092 --create --if-not-exists --topic trip-updated --partitions 1 --replication-factor 1
+          /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:19092 --create --if-not-exists --topic analytics-generated --partitions 1 --replication-factor 1
+          /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:19092 --create --if-not-exists --topic trip-processing-failed --partitions 1 --replication-factor 1
+          echo "Svi Kafka topic-i su uspesno kreirani."

@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo-analytics
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongo-analytics
+  template:
+    metadata:
+      labels:
+        app: mongo-analytics
+    spec:
+      containers:
+      - name: mongo-analytics
+        image: "{{ .Values.mongoAnalytics.image }}:{{ .Values.mongoAnalytics.tag }}"
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        ports:
+        - containerPort: {{ .Values.mongoAnalytics.port }}
+        env:
+        - name: MONGO_INITDB_DATABASE
+          value: {{ .Values.mongoAnalytics.database }}
+        - name: MONGO_INITDB_ROOT_USERNAME
+          value: {{ .Values.mongoAnalytics.rootUser }}
+        - name: MONGO_INITDB_ROOT_PASSWORD
+          value: {{ .Values.mongoAnalytics.rootPassword }}
+        resources:
+          requests:
+            cpu: {{ .Values.mongoAnalytics.resources.requests.cpu }}
+            memory: {{ .Values.mongoAnalytics.resources.requests.memory }}
+          limits:
+            cpu: {{ .Values.mongoAnalytics.resources.limits.cpu }}
+            memory: {{ .Values.mongoAnalytics.resources.limits.memory }}
+        volumeMounts:
+        - name: mongo-analytics-data
+          mountPath: /data/db
+      volumes:
+      - name: mongo-analytics-data
+        emptyDir: {}

@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo-catalog
+  namespace: {{ .Values.namespace }}
+spec:
+  selector:
+    app: mongo-catalog
+  ports:
+  - port: {{ .Values.mongoCatalog.port }}
+    targetPort: {{ .Values.mongoCatalog.port }}
+  type: ClusterIP

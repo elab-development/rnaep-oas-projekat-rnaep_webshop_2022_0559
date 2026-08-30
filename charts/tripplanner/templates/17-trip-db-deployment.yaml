@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trip-db
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: trip-db
+  template:
+    metadata:
+      labels:
+        app: trip-db
+    spec:
+      containers:
+      - name: mysql
+        image: "{{ .Values.tripDb.image }}:{{ .Values.tripDb.tag }}"
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        ports:
+        - containerPort: {{ .Values.tripDb.port }}
+        env:
+        - name: MYSQL_DATABASE
+          value: {{ .Values.tripDb.database }}
+        - name: MYSQL_USER
+          value: {{ .Values.tripDb.user }}
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: TRIP_DB_PASSWORD
+        - name: MYSQL_ROOT_PASSWORD
+          value: {{ .Values.tripDb.rootPassword }}
+        resources:
+          requests:
+            cpu: {{ .Values.tripDb.resources.requests.cpu }}
+            memory: {{ .Values.tripDb.resources.requests.memory }}
+          limits:
+            cpu: {{ .Values.tripDb.resources.limits.cpu }}
+            memory: {{ .Values.tripDb.resources.limits.memory }}
+        volumeMounts:
+        - name: trip-db-data
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: trip-db-data
+        emptyDir: {}

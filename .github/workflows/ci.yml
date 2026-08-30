@@ -1,0 +1,62 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - feature/system-integration
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  test-and-build:
+    name: Test and Build Services
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install and test API Gateway
+        run: |
+          npm ci --prefix api-gateway
+          npm test --prefix api-gateway
+
+      - name: Install and test Auth Service
+        run: |
+          npm ci --prefix auth-service
+          npm test --prefix auth-service
+
+      - name: Install and test Catalog Service
+        run: |
+          npm ci --prefix catalog-service
+          npm test --if-present --prefix catalog-service
+
+      - name: Install and test Trip Service
+        run: |
+          npm ci --prefix trip-service
+          npm test --prefix trip-service
+
+      - name: Install and test Analytics Service
+        run: |
+          npm ci --prefix analytics-service
+          npm test --prefix analytics-service
+
+      - name: Install and build Frontend
+        run: |
+          npm ci --prefix frontend
+          npm run build --prefix frontend
+
+      - name: Validate Docker Compose configuration
+        run: docker compose config
+
+      - name: Build Docker images
+        run: docker compose build

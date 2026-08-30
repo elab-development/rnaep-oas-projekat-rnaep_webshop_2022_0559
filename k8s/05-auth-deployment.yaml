@@ -1,0 +1,53 @@
+﻿apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-service
+  namespace: tripplanner
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: auth-service
+  template:
+    metadata:
+      labels:
+        app: auth-service
+    spec:
+      containers:
+      - name: auth-service
+        image: tea17/auth-service:1.0
+        ports:
+        - containerPort: 3001
+        envFrom:
+        - configMapRef:
+            name: app-config
+        env:
+        - name: AUTH_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: AUTH_DB_PASSWORD
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: AUTH_JWT_SECRET
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3001
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3001
+          initialDelaySeconds: 10
+          periodSeconds: 5
