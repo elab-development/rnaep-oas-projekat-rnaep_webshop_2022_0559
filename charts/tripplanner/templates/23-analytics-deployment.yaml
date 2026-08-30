@@ -2,9 +2,9 @@
 kind: Deployment
 metadata:
   name: analytics-service
-  namespace: tripplanner
+  namespace: {{ .Values.namespace }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.analytics.replicas }}
   selector:
     matchLabels:
       app: analytics-service
@@ -15,28 +15,29 @@ spec:
     spec:
       containers:
       - name: analytics-service
-        image: tea17/analytics-service:1.0
+        image: "{{ .Values.analytics.image }}:{{ .Values.analytics.tag }}"
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
         ports:
-        - containerPort: 3004
+        - containerPort: {{ .Values.analytics.port }}
         envFrom:
         - configMapRef:
             name: app-config
         resources:
           requests:
-            memory: 128Mi
-            cpu: 100m
+            cpu: {{ .Values.analytics.resources.requests.cpu }}
+            memory: {{ .Values.analytics.resources.requests.memory }}
           limits:
-            memory: 256Mi
-            cpu: 500m
+            cpu: {{ .Values.analytics.resources.limits.cpu }}
+            memory: {{ .Values.analytics.resources.limits.memory }}
         livenessProbe:
           httpGet:
             path: /health
-            port: 3004
+            port: {{ .Values.analytics.port }}
           initialDelaySeconds: 30
           periodSeconds: 10
         readinessProbe:
           httpGet:
-            path: /ready
-            port: 3004
+            path: /health
+            port: {{ .Values.analytics.port }}
           initialDelaySeconds: 10
           periodSeconds: 5

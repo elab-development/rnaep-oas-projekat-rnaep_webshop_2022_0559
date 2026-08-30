@@ -2,9 +2,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: trip-service
-  namespace: tripplanner
+  namespace: {{ .Values.namespace }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.trip.replicas }}
   selector:
     matchLabels:
       app: trip-service
@@ -15,9 +15,10 @@ spec:
     spec:
       containers:
       - name: trip-service
-        image: tea17/trip-service:1.0
+        image: "{{ .Values.trip.image }}:{{ .Values.trip.tag }}"
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
         ports:
-        - containerPort: 3003
+        - containerPort: {{ .Values.trip.port }}
         envFrom:
         - configMapRef:
             name: app-config
@@ -39,20 +40,20 @@ spec:
               key: WEATHER_API_KEY
         resources:
           requests:
-            memory: "128Mi"
-            cpu: "100m"
+            cpu: {{ .Values.trip.resources.requests.cpu }}
+            memory: {{ .Values.trip.resources.requests.memory }}
           limits:
-            memory: "256Mi"
-            cpu: "500m"
+            cpu: {{ .Values.trip.resources.limits.cpu }}
+            memory: {{ .Values.trip.resources.limits.memory }}
         livenessProbe:
           httpGet:
             path: /health
-            port: 3003
+            port: {{ .Values.trip.port }}
           initialDelaySeconds: 30
           periodSeconds: 10
         readinessProbe:
           httpGet:
-            path: /ready
-            port: 3003
+            path: /health
+            port: {{ .Values.trip.port }}
           initialDelaySeconds: 10
           periodSeconds: 5

@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: grafana
-  namespace: tripplanner
+  namespace: {{ .Values.namespace }}
 spec:
   replicas: 1
   selector:
@@ -15,30 +15,19 @@ spec:
     spec:
       containers:
       - name: grafana
-        image: grafana/grafana:latest
+        image: "{{ .Values.grafana.image }}:{{ .Values.grafana.tag }}"
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
         ports:
-        - containerPort: 3000
+        - containerPort: {{ .Values.grafana.port }}
         env:
         - name: GF_SECURITY_ADMIN_USER
-          value: "admin"
+          value: {{ .Values.grafana.adminUser }}
         - name: GF_SECURITY_ADMIN_PASSWORD
-          value: "admin"
+          value: {{ .Values.grafana.adminPassword }}
         resources:
           requests:
-            memory: "128Mi"
-            cpu: "100m"
+            cpu: {{ .Values.grafana.resources.requests.cpu }}
+            memory: {{ .Values.grafana.resources.requests.memory }}
           limits:
-            memory: "256Mi"
-            cpu: "300m"
-        livenessProbe:
-          httpGet:
-            path: /api/health
-            port: 3000
-          initialDelaySeconds: 30
-          periodSeconds: 15
-        readinessProbe:
-          httpGet:
-            path: /api/health
-            port: 3000
-          initialDelaySeconds: 10
-          periodSeconds: 5
+            cpu: {{ .Values.grafana.resources.limits.cpu }}
+            memory: {{ .Values.grafana.resources.limits.memory }}

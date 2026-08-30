@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: trip-db
-  namespace: tripplanner
+  namespace: {{ .Values.namespace }}
 spec:
   replicas: 1
   selector:
@@ -15,28 +15,29 @@ spec:
     spec:
       containers:
       - name: mysql
-        image: mysql:8.0
+        image: "{{ .Values.tripDb.image }}:{{ .Values.tripDb.tag }}"
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
         ports:
-        - containerPort: 3306
+        - containerPort: {{ .Values.tripDb.port }}
         env:
         - name: MYSQL_DATABASE
-          value: trip_db
+          value: {{ .Values.tripDb.database }}
         - name: MYSQL_USER
-          value: trip_user
+          value: {{ .Values.tripDb.user }}
         - name: MYSQL_PASSWORD
           valueFrom:
             secretKeyRef:
               name: app-secrets
               key: TRIP_DB_PASSWORD
         - name: MYSQL_ROOT_PASSWORD
-          value: "root_password_demo"
+          value: {{ .Values.tripDb.rootPassword }}
         resources:
           requests:
-            memory: "256Mi"
-            cpu: "100m"
+            cpu: {{ .Values.tripDb.resources.requests.cpu }}
+            memory: {{ .Values.tripDb.resources.requests.memory }}
           limits:
-            memory: "512Mi"
-            cpu: "500m"
+            cpu: {{ .Values.tripDb.resources.limits.cpu }}
+            memory: {{ .Values.tripDb.resources.limits.memory }}
         volumeMounts:
         - name: trip-db-data
           mountPath: /var/lib/mysql

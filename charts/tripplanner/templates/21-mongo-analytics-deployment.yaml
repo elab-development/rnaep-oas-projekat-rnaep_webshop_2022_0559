@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: mongo-analytics
-  namespace: tripplanner
+  namespace: {{ .Values.namespace }}
 spec:
   replicas: 1
   selector:
@@ -15,16 +15,24 @@ spec:
     spec:
       containers:
       - name: mongo-analytics
-        image: mongo:7
+        image: "{{ .Values.mongoAnalytics.image }}:{{ .Values.mongoAnalytics.tag }}"
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
         ports:
-        - containerPort: 27017
+        - containerPort: {{ .Values.mongoAnalytics.port }}
+        env:
+        - name: MONGO_INITDB_DATABASE
+          value: {{ .Values.mongoAnalytics.database }}
+        - name: MONGO_INITDB_ROOT_USERNAME
+          value: {{ .Values.mongoAnalytics.rootUser }}
+        - name: MONGO_INITDB_ROOT_PASSWORD
+          value: {{ .Values.mongoAnalytics.rootPassword }}
         resources:
           requests:
-            memory: "128Mi"
-            cpu: "100m"
+            cpu: {{ .Values.mongoAnalytics.resources.requests.cpu }}
+            memory: {{ .Values.mongoAnalytics.resources.requests.memory }}
           limits:
-            memory: "256Mi"
-            cpu: "300m"
+            cpu: {{ .Values.mongoAnalytics.resources.limits.cpu }}
+            memory: {{ .Values.mongoAnalytics.resources.limits.memory }}
         volumeMounts:
         - name: mongo-analytics-data
           mountPath: /data/db

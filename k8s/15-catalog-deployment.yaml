@@ -1,4 +1,4 @@
-apiVersion: apps/v1
+﻿apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: catalog-service
@@ -42,7 +42,7 @@ spec:
           periodSeconds: 10
         readinessProbe:
           httpGet:
-            path: /ready
+            path: /health
             port: 3002
           initialDelaySeconds: 10
           periodSeconds: 5

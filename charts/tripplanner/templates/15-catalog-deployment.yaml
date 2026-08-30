@@ -2,9 +2,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: catalog-service
-  namespace: tripplanner
+  namespace: {{ .Values.namespace }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.catalog.replicas }}
   selector:
     matchLabels:
       app: catalog-service
@@ -15,9 +15,10 @@ spec:
     spec:
       containers:
       - name: catalog-service
-        image: tea17/catalog-service:1.0
+        image: "{{ .Values.catalog.image }}:{{ .Values.catalog.tag }}"
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
         ports:
-        - containerPort: 3002
+        - containerPort: {{ .Values.catalog.port }}
         envFrom:
         - configMapRef:
             name: app-config
@@ -29,20 +30,20 @@ spec:
               key: GEOAPIFY_API_KEY
         resources:
           requests:
-            memory: "128Mi"
-            cpu: "100m"
+            cpu: {{ .Values.catalog.resources.requests.cpu }}
+            memory: {{ .Values.catalog.resources.requests.memory }}
           limits:
-            memory: "256Mi"
-            cpu: "500m"
+            cpu: {{ .Values.catalog.resources.limits.cpu }}
+            memory: {{ .Values.catalog.resources.limits.memory }}
         livenessProbe:
           httpGet:
             path: /health
-            port: 3002
+            port: {{ .Values.catalog.port }}
           initialDelaySeconds: 30
           periodSeconds: 10
         readinessProbe:
           httpGet:
-            path: /ready
-            port: 3002
+            path: /health
+            port: {{ .Values.catalog.port }}
           initialDelaySeconds: 10
           periodSeconds: 5

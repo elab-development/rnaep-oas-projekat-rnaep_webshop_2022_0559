@@ -1,3 +1,41 @@
+# name: Validate Kubernetes Manifests
+
+# on:
+#   push:
+#     branches: [ main, master ]
+#   pull_request:
+#     branches: [ main, master ]
+
+# jobs:
+#   validate-manifests:
+#     name: Lint and Validate K8s/Helm
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v4
+
+#       - name: Install Helm
+#         uses: azure/setup-helm@v4
+#         with:
+#           version: '3.14.0'
+
+#       - name: Helm lint
+#         run: helm lint ./charts/tripplanner
+
+#       - name: Helm template render check
+#         run: |
+#           helm template tripplanner ./charts/tripplanner > /dev/null
+
+#       - name: Validate K8s manifests with kubectl dry-run
+#         run: |
+#           curl -LO "https://dl.k8s.io/release/v1.29.0/bin/linux/amd64/kubectl"
+#           chmod +x kubectl
+#           sudo mv kubectl /usr/local/bin/
+#           for file in k8s/*.yaml; do
+#             kubectl apply --dry-run=client -f "$file"
+#           done
+
 name: Validate Kubernetes Manifests
 
 on:
@@ -12,25 +50,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Install Helm
-      uses: azure/setup-helm@v4
-      with:
-        version: '3.14.0'
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: '3.14.0'
 
-    - name: Helm lint
-      run: helm lint ./charts/tripplanner
+      - name: Helm lint
+        run: helm lint ./charts/tripplanner
 
-    - name: Helm template render check
-      run: |
-        helm template tripplanner ./charts/tripplanner > /dev/null && echo "Helm template rendered successfully"
+      - name: Helm template render check
+        run: |
+          helm template tripplanner ./charts/tripplanner > /dev/null
 
-    - name: Validate K8s manifests with kubectl dry-run
-      run: |
-        curl -LO "https://dl.k8s.io/release/v1.29.0/bin/linux/amd64/kubectl"
-        chmod +x kubectl
-        sudo mv kubectl /usr/local/bin/
-        kubectl apply --dry-run=client -f k8s/ 2>&1 | grep -v "^Warning" || true
-        echo "Manifest validation completed"
+      - name: Validate K8s manifests with kubeconform
+        run: |
+          curl -L https://github.com/yannh/kubeconform/releases/download/v0.6.4/kubeconform-linux-amd64.tar.gz | tar xz
+          sudo mv kubeconform /usr/local/bin/
+
+          if [ -d "k8s" ]; then
+            kubeconform -summary k8s/
+          fi
+
+          helm template tripplanner ./charts/tripplanner | kubeconform -summary
